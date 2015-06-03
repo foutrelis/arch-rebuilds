@@ -1,0 +1,25 @@
+% my $sth = db->prepare(q{SELECT batch, base, status, name FROM build_tasks LEFT JOIN builders ON builders.id = builder_id ORDER BY batch, base});
+% $sth->execute;
+
+<p>
+	Completed
+	<span class="label label-success"><%= $progress->{complete} %></span>
+	out of <%= $progress->{total} %> build tasks with
+	<span class="label label-danger"><%= $progress->{failed} %></span>
+	failed tasks in the current batch
+</p>
+<div class="progress">
+	<div class="progress-bar progress-bar-success progress-bar-striped" style="width: <%= $progress->{complete_p} %>%"></div>
+	<div class="progress-bar progress-bar-danger progress-bar-striped" style="width: <%= $progress->{failed_p} %>%"></div>
+</div>
+
+<hr>
+
+% my $batch = 1;
+% while (my $build = $sth->fetchrow_hashref) {
+	% if ($build->{batch} > $batch) {
+		% $batch = $build->{batch};
+		<hr>
+	% }
+	<span class="rebuild <%= rebuild_label $build %>" title="<%= rebuild_title $build %>"><%= $build->{base} %></span>
+% }

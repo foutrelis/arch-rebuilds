@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>C++11 ABI rebuilds</title>
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+		<style>
+			html {
+				position: relative;
+				min-height: 100%;
+			}
+
+			body {
+				margin-bottom: 60px;
+				font-size: 2em;
+			}
+
+			.container {
+				width: auto;
+				max-width: 960px;
+				padding: 0 15px;
+			}
+
+			.label {
+				vertical-align: middle;
+			}
+
+			.rebuild {
+				cursor: default;
+				display: inline-block;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="page-header">
+				<h1>C++11 ABI rebuilds</h1>
+			</div>
+			<%= content %>
+		</div>
+	</body>
+</html>
