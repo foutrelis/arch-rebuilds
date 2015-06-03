@@ -78,6 +78,7 @@ try_build() {
 
 	if eval $buildcmd > >(tee stdout.log) 2> >(tee stderr.log >&2); then
 		api_call update base=$base status=complete
+		build_successful=1
 	elif grep -q '==> ERROR:.*Abort' stdout.log stderr.log; then
 		api_call update base=$base status=pending
 	else
@@ -91,6 +92,7 @@ try_build() {
 }
 
 while :; do
+	build_successful=0
 	try_build
-	sleep 5
+	(( $build_successful )) ||  sleep 5
 done
