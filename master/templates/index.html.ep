@@ -21,7 +21,7 @@
 		% $batch = $task->{batch};
 		<hr>
 	% }
-	<div class="build-task">
+	<span class="build-task">
 		% if ($task->{status} eq 'failed') {
 			<a target="_blank" href="<%= url_for "/log/$task->{base}" %>">
 		% }
@@ -29,5 +29,5 @@
 		% if ($task->{status} eq 'failed') {
 			</a>
 		% }
-	</div>
+	</span>
 % }
