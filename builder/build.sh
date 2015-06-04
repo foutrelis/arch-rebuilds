@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 readonly API_BASE_URL=https://rebuilds.foutrelis.com
 readonly VERSION=$(< $(dirname $0)/version)
@@ -32,9 +32,28 @@ api_call() {
 	echo "${result[@]}"
 }
 
+build_i686() {
+	local base=$1
+	cxx11abi-celestia-build $base cxx11abi i686 cxx11abi-i686-build
+}
+
+build_x86_64() {
+	local base=$1
+	cxx11abi-celestia-build $base cxx11abi x86_64 cxx11abi-x86_64-build
+}
+
+build_multilib() {
+	local base=$1 repo=${2:-cxx11abi-multilib}
+	cxx11abi-celestia-build $base $repo x86_64 multilib-cxx11abi-build
+}
+
+abort_build() {
+	local base=$1
+	api_call update base=$base status=pending
+}
+
 try_build() {
 	local result=($(api_call fetch))
-	local restoretrap
 
 	if [[ -z $result ]]; then
 		return
@@ -48,15 +67,18 @@ try_build() {
 	local buildcmd arches arch
 	local builddir=$(mktemp -d -p "$BASE_DIR")
 
-	restoretrap=$(trap -p EXIT)
-	trap "rm -rf \"$builddir\"; api_call update base=$base status=pending" EXIT
+	trap "rm -rf \"$builddir\"" EXIT
+	trap "abort_build $base; trap - INT; kill -INT $$" INT
 
-	pushd "$builddir"
+	pushd "$builddir" > /dev/null
 
-	echo "Building package $base for repos: ${repos[@]}"
-	archco $base || communityco $base
+	{ archco $base || communityco $base; } >/dev/null 2>&1
+	if [[ ! -f $base/trunk/PKGBUILD ]]; then
+		api_call update base=$base status=failed log='Check out failed'
+		return
+	fi
+
 	cd $base/trunk
-
 	setconf PKGBUILD pkgrel=0
 
 	if [[ $base == gcc || $base == gcc-multilib ]]; then
@@ -64,34 +86,39 @@ try_build() {
 	fi
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
-		# multilib package with i686 version
-		buildcmd='cxx11abi-celestia-build $base cxx11abi-multilib x86_64 multilib-cxx11abi-build'
-		buildcmd+=' && cxx11abi-celestia-build $base cxx11abi i686 cxx11abi-i686-build'
+		# multilib package with i686 variant
+		buildcmd="build_multilib $base && build_i686 $base"
 	elif [[ $repos == multilib ]]; then
-		buildcmd='cxx11abi-celestia-build $base cxx11abi-multilib x86_64 multilib-cxx11abi-build'
+		buildcmd="build_multilib $base"
 	else
-		buildcmd=true
-		arches=($(. PKGBUILD && echo "${arch[@]}"))
+		buildcmd='true'
+		arches=($(. PKGBUILD && printf "%s\n" "${arch[@]}" | sort | uniq))
 		for arch in "${arches[@]}"; do
-			if [[ $arch == i686 ]] || [[ $arch == x86_64 ]]; then
-				buildcmd+=" && cxx11abi-celestia-build $base cxx11abi $arch cxx11abi-$arch-build"
-			fi
+			case $arch in
+				i686)
+					buildcmd+=" && build_i686 $base"
+					;;
+				x86_64)
+					buildcmd+=" && { build_x86_64 $base || build_multilib $base cxx11abi-multilib; }"
+					;;
+			esac
 		done
 	fi
 
-	if eval $buildcmd > >(tee buildtask.log) 2>&1; then
+	echo "=> Building package $base for repos: ${repos[@]}"
+
+	if (eval $buildcmd) > build.log 2>&1; then
 		api_call update base=$base status=complete
 		build_successful=1
-	elif grep -q '==> ERROR:.*Abort' buildtask.log; then
-		api_call update base=$base status=pending
 	else
-		api_call update base=$base status=failed log@buildtask.log
+		api_call update base=$base status=failed log@build.log
 	fi
 
-	eval $restoretrap
-
-	popd
 	rm -rf "$builddir"
+
+	trap - EXIT INT
+
+	popd > /dev/null
 }
 
 while :; do

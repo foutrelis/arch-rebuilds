@@ -115,7 +115,7 @@ post '/update' => sub {
 	my $num = $sth->execute($status, $log, $builder->{id}, $base);
 	$self->db->commit;
 
-	$self->render(text => $num == 1 ? 'OK' : 'NOTOK', format => 'txt');
+	$self->render(text => $num == 1 ? 'OK ' . uc $status : 'NOTOK', format => 'txt');
 };
 
 get '/log/:base' => sub {
