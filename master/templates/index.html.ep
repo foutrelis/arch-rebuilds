@@ -1,4 +1,5 @@
-% my $sth = db->prepare(q{SELECT batch, base, status, name FROM build_tasks LEFT JOIN builders ON builders.id = builder_id ORDER BY batch, base});
+% my $task_table = $show_all_batches ? 'build_tasks' : 'current_build_tasks';
+% my $sth = db->prepare(qq{SELECT batch, base, status, name FROM $task_table LEFT JOIN builders ON builders.id = builder_id ORDER BY batch, base});
 % $sth->execute;
 
 <p>
@@ -15,8 +16,16 @@
 
 <hr>
 
-% my $batch = 1;
+% if ($show_all_batches) {
+	<h3>Rebuilds in all batches (<a href="/">show current</a>)</h3>
+	<hr>
+% } else {
+	<h3>Rebuilds in current batch (<a href="/?all">show all</a>)</h3>
+% }
+
+% my $batch = 0;
 % while (my $task = $sth->fetchrow_hashref) {
+	% $batch = $task->{batch} unless $batch;
 	% if ($task->{batch} > $batch) {
 		% $batch = $task->{batch};
 		<hr>

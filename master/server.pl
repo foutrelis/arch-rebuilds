@@ -141,10 +141,11 @@ get '/' => sub {
 		ROUND(100.0 * complete / total, 2) as complete_p,
 		ROUND(100.0 * failed / total, 2) as failed_p
 		FROM status_counts});
+	my $show_all_batches = defined $self->param('all');
 
 	$sth->execute();
 	my $progress = $sth->fetchrow_hashref;
-	$self->stash(progress => $progress);
+	$self->stash(progress => $progress, show_all_batches => $show_all_batches);
 	$self->render(template => 'index');
 };
 
