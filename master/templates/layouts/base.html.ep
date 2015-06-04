@@ -27,8 +27,11 @@
 			}
 
 			.build-task .label {
-				cursor: default;
 				display: inline-block;
+			}
+
+			.build-task > .label {
+				cursor: default;
 			}
 
 			.build-task > a:hover,
