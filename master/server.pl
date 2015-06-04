@@ -33,6 +33,7 @@ helper rebuild_title => sub {
 
 	my $title = $base->{status};
 	$title .= " ($base->{name})" if $base->{name} and $base->{status} eq 'inprogress';
+	$title .= ' (click for build log)' if $base->{status} eq 'failed';
 	return $title;
 };
 
@@ -59,7 +60,7 @@ sub get_repos {
 	return @repos;
 }
 
-get '/fetch' => sub {
+post '/fetch' => sub {
 	my $self = shift;
 	state $sth_fetch = $self->db->prepare(q{
 		SELECT base FROM current_build_tasks WHERE status = 'pending'
@@ -92,13 +93,14 @@ get '/fetch' => sub {
 	$self->render(text => "OK $base " . join(' ', get_repos($self, $base)), format => 'txt');
 };
 
-get '/update' => sub {
+post '/update' => sub {
 	my $self = shift;
 	state $sth = $self->db->prepare(q{
-		UPDATE current_build_tasks SET status = ?
+		UPDATE current_build_tasks SET status = ?, log = ?
 		WHERE status = 'inprogress' AND builder_id = ? AND base = ?});
 	my $base = $self->param('base');
 	my $status = $self->param('status');
+	my $log = $self->param('log') // '';
 
 	my $builder = get_builder $self, $self->param('token');
 	return $self->render(text => 'BAD AUTH', status => 403, format => 'txt') unless $builder;
@@ -110,10 +112,20 @@ get '/update' => sub {
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
 
-	my $num = $sth->execute($status, $builder->{id}, $base);
+	my $num = $sth->execute($status, $log, $builder->{id}, $base);
 	$self->db->commit;
 
 	$self->render(text => $num == 1 ? 'OK' : 'NOTOK', format => 'txt');
+};
+
+get '/log/:base' => sub {
+	my $self = shift;
+	state $sth = $self->db->prepare(q{SELECT log FROM current_build_tasks WHERE base = ?});
+	my $base = $self->param('base');
+
+	$sth->execute($base);
+	my $row = $sth->fetchrow_hashref;
+	$self->render(text => $row->{log}, format => 'txt');
 };
 
 get '/' => sub {

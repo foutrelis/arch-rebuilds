@@ -26,9 +26,18 @@
 				vertical-align: middle;
 			}
 
-			.rebuild {
+			.build-task {
 				cursor: default;
 				display: inline-block;
+			}
+
+			.build-task > a:hover,
+			.build-task > a:focus {
+				text-decoration: none;
+			}
+
+			.build-task > a:focus {
+				outline: 0;
 			}
 		</style>
 	</head>

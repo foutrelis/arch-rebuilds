@@ -60,6 +60,7 @@ sub init_db {
 			base varchar NOT NULL,
 			status varchar NOT NULL DEFAULT 'pending',
 			passes varchar NOT NULL DEFAULT 'single',
+			log string NOT NULL DEFAULT '',
 			builder_id integer REFERENCES builders
 		);
 

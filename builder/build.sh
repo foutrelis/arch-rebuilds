@@ -2,6 +2,7 @@
 
 readonly API_BASE_URL=https://rebuilds.foutrelis.com
 readonly VERSION=$(< $(dirname $0)/version)
+readonly BASE_DIR=$(dirname $(readlink -f -- "$0"))
 
 api_call() {
 	local action=$1; shift
@@ -13,7 +14,7 @@ api_call() {
 	done
 
 	local url="$API_BASE_URL/$action"
-	local result=($(curl -s -w ' %{http_code}' -G "$url" "${params[@]}"))
+	local result=($(curl -s -w ' %{http_code}' "$url" "${params[@]}"))
 
 	if [[ ${#result[@]} -lt 2 ]]; then
 		echo "Got empty response for API call: $action" >&2
@@ -45,14 +46,16 @@ try_build() {
 	local base=${result[1]}
 	local repos=(${result[@]:2})
 	local buildcmd arches arch
+	local builddir=$(mktemp -d -p "$BASE_DIR")
 
 	restoretrap=$(trap -p EXIT)
-	trap "api_call update base=$base status=pending" EXIT
+	trap "rm -rf \"$builddir\"; api_call update base=$base status=pending" EXIT
+
+	pushd "$builddir"
 
 	echo "Building package $base for repos: ${repos[@]}"
-
 	archco $base || communityco $base
-	pushd $base/trunk
+	cd $base/trunk
 
 	setconf PKGBUILD pkgrel=0
 
@@ -76,19 +79,19 @@ try_build() {
 		done
 	fi
 
-	if eval $buildcmd > >(tee stdout.log) 2> >(tee stderr.log >&2); then
+	if eval $buildcmd > >(tee buildtask.log) 2>&1; then
 		api_call update base=$base status=complete
 		build_successful=1
-	elif grep -q '==> ERROR:.*Abort' stdout.log stderr.log; then
+	elif grep -q '==> ERROR:.*Abort' buildtask.log; then
 		api_call update base=$base status=pending
 	else
-		api_call update base=$base status=failed
+		api_call update base=$base status=failed log@buildtask.log
 	fi
 
-	popd
-	rm -rf ./$base
-
 	eval $restoretrap
+
+	popd
+	rm -rf "$builddir"
 }
 
 while :; do

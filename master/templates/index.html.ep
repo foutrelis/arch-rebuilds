@@ -16,10 +16,18 @@
 <hr>
 
 % my $batch = 1;
-% while (my $build = $sth->fetchrow_hashref) {
-	% if ($build->{batch} > $batch) {
-		% $batch = $build->{batch};
+% while (my $task = $sth->fetchrow_hashref) {
+	% if ($task->{batch} > $batch) {
+		% $batch = $task->{batch};
 		<hr>
 	% }
-	<span class="rebuild <%= rebuild_label $build %>" title="<%= rebuild_title $build %>"><%= $build->{base} %></span>
+	<div class="build-task">
+		% if ($task->{status} eq 'failed') {
+			<a target="_blank" href="<%= url_for "/log/$task->{base}" %>">
+		% }
+		<span class="<%= rebuild_label $task %>" title="<%= rebuild_title $task %>"><%= $task->{base} %></span>
+		% if ($task->{status} eq 'failed') {
+			</a>
+		% }
+	</div>
 % }
