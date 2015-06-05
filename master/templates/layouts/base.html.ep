@@ -22,34 +22,29 @@
 				padding: 0 15px;
 			}
 
-			.label {
-				vertical-align: middle;
-			}
-
 			.build-task .label {
 				display: inline-block;
-			}
-
-			.build-task > .label {
+				vertical-align: middle;
 				cursor: default;
 			}
 
-			.build-task > a:hover,
-			.build-task > a:focus {
-				text-decoration: none;
+			.build-task > .dropdown > .label {
+				cursor: pointer;
 			}
 
-			.build-task > a:focus {
-				outline: 0;
+			.build-task > .dropdown {
+				display: inline-block;
 			}
 		</style>
 	</head>
 	<body>
 		<div class="container">
 			<div class="page-header">
-				<h1>C++11 ABI rebuilds</h1>
+				<h1><a href="/">C++11 ABI rebuilds</a></h1>
 			</div>
 			<%= content %>
 		</div>
+		<script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 	</body>
 </html>

@@ -14,13 +14,18 @@
 	<div class="progress-bar progress-bar-danger progress-bar-striped" style="width: <%= $progress->{failed_p} %>%"></div>
 </div>
 
-<hr>
+% if (my $alert = flash 'alert') {
+	<div class="alert alert-<%= $alert->{class} %>" role="alert">
+		<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+		%= $alert->{message}
+	</div>
+% }
 
 % if ($show_all_batches) {
-	<h3>Rebuilds in all batches (<a href="/">show current</a>)</h3>
+	<h3>Build tasks in all batches (<a href="/">show current</a>)</h3>
 	<hr>
 % } else {
-	<h3>Rebuilds in current batch (<a href="/?all">show all</a>)</h3>
+	<h3>Build tasks in current batch (<a href="/?all">show all</a>)</h3>
 % }
 
 % my $batch = 0;
@@ -32,11 +37,25 @@
 	% }
 	<span class="build-task">
 		% if ($task->{status} eq 'failed') {
-			<a target="_blank" href="<%= url_for "/log/$task->{base}" %>">
-		% }
-		<span class="<%= rebuild_label $task %>" title="<%= rebuild_title $task %>"><%= $task->{base} %></span>
-		% if ($task->{status} eq 'failed') {
-			</a>
+			<div class="dropdown">
+				<span class="<%= rebuild_label $task %> dropdown-toggle" title="<%= rebuild_title $task %>" data-toggle="dropdown" aria-expanded="false">
+					<%= $task->{base} %> <span class="caret"></span>
+				</span>
+				<ul class="dropdown-menu" role="menu">
+					<li>
+						<a target="_blank" href="<%= url_for "/log/$task->{base}" %>">
+							<span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+							View build log
+						</a>
+					<li>
+						<a href="<%= url_for "/retry/$task->{base}" %>">
+							<span class="glyphicon glyphicon-repeat" aria-hidden="true"></span>
+							Retry build task
+						</a>
+				</ul>
+				</div>
+		% } else {
+			<span class="<%= rebuild_label $task %>" title="<%= rebuild_title $task %>"><%= $task->{base} %></span>
 		% }
 	</span>
 % }

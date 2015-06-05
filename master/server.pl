@@ -33,7 +33,6 @@ helper rebuild_title => sub {
 
 	my $title = $base->{status};
 	$title .= " ($base->{name})" if $base->{name} and $base->{status} eq 'inprogress';
-	$title .= ' (click for build log)' if $base->{status} eq 'failed';
 	return $title;
 };
 
@@ -126,6 +125,20 @@ get '/log/:base' => sub {
 	$sth->execute($base);
 	my $row = $sth->fetchrow_hashref;
 	$self->render(text => $row->{log}, format => 'txt');
+};
+
+get '/retry/:base' => sub {
+	my $self = shift;
+	state $sth = $self->db->prepare(q{
+		UPDATE current_build_tasks SET status = 'pending', log = ''
+		WHERE status = 'failed' AND base = ?});
+	my $base = $self->param('base');
+
+	my $num = $sth->execute($base);
+	my $message = $num == 1 ? "Requeued $base" : "Unable to requeue $base";
+	my $class = $num == 1 ? 'success' : 'danger';
+	$self->flash(alert => {message => $message, class => $class});
+	$self->redirect_to('/');
 };
 
 get '/' => sub {
