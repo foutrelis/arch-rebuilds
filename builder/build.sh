@@ -57,6 +57,8 @@ try_build() {
 
 	if [[ -z $result ]]; then
 		return
+	elif [[ $result == NOPKG ]]; then
+		return
 	elif [[ $result != OK ]]; then
 		echo "Got $result response for API call: fetch" >&2
 		return
