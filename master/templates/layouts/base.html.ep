@@ -22,9 +22,12 @@
 				padding: 0 15px;
 			}
 
+			.label {
+				vertical-align: middle;
+			}
+
 			.build-task .label {
 				display: inline-block;
-				vertical-align: middle;
 				cursor: default;
 			}
 
