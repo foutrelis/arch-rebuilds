@@ -71,7 +71,13 @@ sub init_db {
 			)
 		);
 	});
+
+	# Avoid messing up existing rebuild list
+	my @row = $dbh->selectrow_array(q{SELECT COUNT(*) FROM build_tasks});
+	die 'Error: build_tasks table is not empty; aborting' if $row[0];
 };
+
+init_db;
 
 sub add_build_tasks {
 	state $batch++;
@@ -94,41 +100,36 @@ for my $pkg (@pkgs) {
 }
 @{$_->{deps}} = uniq grep { exists $bases{$_} } @{$_->{deps}} for (values %bases);
 
-init_db;
-
-my %done = map { $_ => 1 } qw ( gcc gcc-multilib );
-add_build_tasks 'pending', 'single', keys %done;;
-
-RETRY:
-while (1) {
-	my @pkgs;
-	for my $base (keys %bases) {
-		next if $done{$base};
-		my @deps = grep { ! $done{$_} } @{$bases{$base}{deps}};
-		unless (@deps) {
-			push @pkgs, $base;
-		}
-	}
-	last unless @pkgs;
-
-	$done{$_} = 1 for @pkgs;
-	add_build_tasks 'pending', 'single', @pkgs;
-}
-
-my $graph = Graph::Directed->new;
+my $g = Graph::Directed->new;
 
 for my $base (keys %bases) {
-	next if $done{$base};
-	my @deps = grep { ! $done{$_} } @{$bases{$base}{deps}};
-	$graph->add_edge($base, $_) for @deps;
+	$g->add_vertex($base);
+	for my $dep (@{$bases{$base}{deps}}) {
+		$g->add_edge($base, $dep);
+	}
 }
 
-if (my @pkgs = map { @$_ } grep { scalar @$_ > 1 } $graph->strongly_connected_components) {
-	$done{$_} = 1 for @pkgs;
-	add_build_tasks 'pending', 'multiple', @pkgs;
-	add_build_tasks 'pending', 'single', @pkgs;
-	goto RETRY;
-}
+# These are packages we must build first
+my @first_batch = qw( gcc gcc-multilib );
 
-# There should not be any packages left but check anyway
-add_build_tasks 'pending', 'none', grep { ! $done{$_} } keys %bases;
+add_build_tasks 'pending', 'single', @first_batch;
+$g->delete_vertices(@first_batch);
+
+while (1) {
+	# Find packages we can build independently and put them a new batch
+	if (my @bases = $g->successorless_vertices) {
+		$g = $g->delete_vertices(@bases);
+		add_build_tasks 'pending', 'single', @bases;
+		next;
+	}
+
+	# Need to resolve dependency cycles; try doing multiple iterative passes
+	# until all packages build and then do a final pass in a following batch
+	for my $scc (grep { @$_ > 1 } $g->strongly_connected_components) {
+		$g = $g->delete_vertices(@$scc);
+		add_build_tasks 'pending', 'multiple', @$scc;
+		add_build_tasks 'pending', 'single', @$scc;
+	}
+
+	last unless $g->vertices;
+}
