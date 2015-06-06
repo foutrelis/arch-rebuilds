@@ -113,7 +113,12 @@ try_build() {
 		api_call update base=$base status=complete
 		build_successful=1
 	else
-		api_call update base=$base status=failed log@build.log
+		# It would be nice to have better interrupt handling here
+		# but devtools doesn't appear to handle SIGINT correctly.
+		grep -q 'ERROR:.*Abort' build.log && kill -INT $$
+
+		"$BASE_DIR"/colorstrip.pl build.log >stripped-build.log
+		api_call update base=$base status=failed log@stripped-build.log
 	fi
 
 	rm -rf "$builddir"
