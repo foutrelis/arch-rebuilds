@@ -101,9 +101,9 @@ try_build() {
 					buildcmd+=" && build_i686 $base"
 					;;
 				x86_64)
-					buildcmd+=" && { build_x86_64 $base || \
+					buildcmd+=" && { build_x86_64 $base || { \
 						grep -q 'error: target not found' build.log && \
-						build_multilib $base cxx11abi; }"
+						build_multilib $base cxx11abi; }; }"
 					;;
 			esac
 		done
