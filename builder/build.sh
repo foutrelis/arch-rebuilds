@@ -1,6 +1,7 @@
 #!/bin/bash
 
 readonly API_BASE_URL=https://rebuilds.foutrelis.com
+readonly AUTH_TOKEN=$(< $HOME/.arch-rebuilds-token)
 readonly VERSION=$(< $(dirname $0)/version)
 readonly BASE_DIR=$(dirname $(readlink -f -- "$0"))
 
