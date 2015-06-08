@@ -120,8 +120,8 @@ try_build() {
 		# but devtools doesn't appear to handle SIGINT correctly.
 		grep -q 'ERROR:.*Abort' build.log && kill -INT $$
 
-		"$BASE_DIR"/colorstrip.pl build.log >stripped-build.log
-		api_call update base=$base status=failed log@stripped-build.log
+		"$BASE_DIR"/colorstrip.pl build.log | gzip >build.log.gz
+		api_call update base=$base status=failed log@build.log.gz
 	fi
 
 	rm -rf "$builddir"

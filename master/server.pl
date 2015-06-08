@@ -3,6 +3,7 @@
 use Mojolicious::Lite;
 use DBI;
 use FindBin;
+use IO::Uncompress::Gunzip qw( gunzip );
 
 open my $fh, "$FindBin::Bin/../builder/version";
 chomp(my $expected_builder_version = <$fh>);
@@ -99,7 +100,6 @@ post '/update' => sub {
 		WHERE status = 'inprogress' AND builder_id = ? AND base = ?});
 	my $base = $self->param('base');
 	my $status = $self->param('status');
-	my $log = $self->param('log') // '';
 
 	my $builder = get_builder $self, $self->param('token');
 	return $self->render(text => 'BAD AUTH', status => 403, format => 'txt') unless $builder;
@@ -107,6 +107,8 @@ post '/update' => sub {
 	unless ($base and $status =~ /^(pending|complete|failed)$/) {
 		$self->render(text => 'BAD REQUEST', status => 400, format => 'txt');
 	}
+
+	gunzip \$self->param('log'), \my $log;
 
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
@@ -117,13 +119,15 @@ post '/update' => sub {
 	$self->render(text => $num == 1 ? 'OK ' . uc $status : 'NOTOK', format => 'txt');
 };
 
-get '/log/:base' => sub {
+get '/log/(:base).log' => sub {
 	my $self = shift;
 	state $sth = $self->db->prepare(q{SELECT log FROM current_build_tasks WHERE base = ?});
 	my $base = $self->param('base');
+	my $download = defined $self->param('download');
 
 	$sth->execute($base);
 	my $row = $sth->fetchrow_hashref;
+	$self->res->headers->content_disposition("attachment; filename=$base.log") if $download;
 	$self->render(text => $row->{log}, format => 'txt');
 };
 
