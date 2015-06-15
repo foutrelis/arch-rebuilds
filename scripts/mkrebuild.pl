@@ -61,6 +61,7 @@ sub init_db {
 			status varchar NOT NULL DEFAULT 'pending',
 			passes varchar NOT NULL DEFAULT 'single',
 			log string NOT NULL DEFAULT '',
+			log_size bigint NOT NULL DEFAULT 0,
 			builder_id integer REFERENCES builders
 		);
 
@@ -70,6 +71,21 @@ sub init_db {
 				SELECT min(batch) FROM build_tasks WHERE status != 'complete'
 			)
 		);
+
+		CREATE OR REPLACE FUNCTION update_log_size()
+		RETURNS TRIGGER AS $$
+		BEGIN
+			NEW.log_size = octet_length(NEW.log);
+			RETURN NEW;
+		END;
+		$$ language 'plpgsql';
+
+		DROP TRIGGER IF EXISTS update_log_size_trigger ON build_tasks;
+
+		CREATE TRIGGER update_log_size_trigger
+			BEFORE UPDATE OF log ON build_tasks
+			FOR EACH ROW
+			EXECUTE PROCEDURE update_log_size();
 	});
 
 	# Avoid messing up existing rebuild list

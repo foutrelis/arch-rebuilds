@@ -1,7 +1,6 @@
 % my $task_table = $show_all_batches ? 'build_tasks' : 'current_build_tasks';
 % my $sth = db->prepare(qq{
-%	SELECT batch, base, status, name, char_length(log) AS log_size,
-%		pg_size_pretty(char_length(log)::bigint) AS log_size_pretty
+%	SELECT batch, base, status, name, log_size, pg_size_pretty(log_size) AS log_size_pretty
 %	FROM $task_table LEFT JOIN builders ON builders.id = builder_id
 %	ORDER BY batch, base});
 % $sth->execute;
