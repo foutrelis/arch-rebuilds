@@ -82,7 +82,7 @@ try_build() {
 	fi
 
 	cd $base/trunk
-	setconf PKGBUILD pkgrel=0
+	setconf PKGBUILD pkgrel=0.2
 
 	if [[ $base == gcc || $base == gcc-multilib ]]; then
 		sed -i 's/--with-default-libstdcxx-abi=c++98//' PKGBUILD
