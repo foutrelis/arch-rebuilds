@@ -27,6 +27,18 @@ sub get_base {
 }
 memoize('get_base');
 
+sub get_provisions {
+	state $sth = $dbh->prepare(q{
+		SELECT DISTINCT pkgname FROM packages_provision
+		JOIN packages ON pkg_id = packages.id
+		WHERE name = ?});
+	my $pkgname = shift;
+
+	$sth->execute($pkgname);
+	return map { $_->[0] } @{$sth->fetchall_arrayref};
+}
+memoize('get_provisions');
+
 sub get_deps {
 	state $sth = $dbh->prepare(q{
 		WITH RECURSIVE deps AS (
@@ -39,7 +51,7 @@ sub get_deps {
 				JOIN packages_depend ON pkg_id = packages.id
 				WHERE deptype = 'D'
 		)
-		SELECT name FROM deps});
+		SELECT DISTINCT name FROM deps});
 	my $pkgname = shift;
 
 	$sth->execute($pkgname);
@@ -112,6 +124,7 @@ my %bases = map { get_base($_) => {deps => []} } @pkgs;
 for my $pkg (@pkgs) {
 	my $base = get_base($pkg);
 	my @deps = get_deps($pkg);
+	push @deps, map { get_provisions $_ } @deps;
 	push @{$bases{$base}{deps}}, grep { $_ ne $base } map { get_base($_) } @deps;
 }
 @{$_->{deps}} = uniq grep { exists $bases{$_} } @{$_->{deps}} for (values %bases);
