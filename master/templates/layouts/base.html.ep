@@ -38,6 +38,10 @@
 			.build-task > .dropdown {
 				display: inline-block;
 			}
+
+			#move-commands-nav {
+				margin-bottom: 10px;
+			}
 		</style>
 	</head>
 	<body>

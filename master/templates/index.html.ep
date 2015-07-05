@@ -26,9 +26,34 @@
 
 % if ($show_all_batches) {
 	<h3>Build tasks in all batches (<a href="/">show current</a>)</h3>
-	<hr>
 % } else {
 	<h3>Build tasks in current batch (<a href="/?all">show all</a>)</h3>
+% }
+
+% if ($progress->{complete} == $progress->{total}) {
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<h3 class="panel-title">Whoa, all done; time to move stuff!</h3>
+		</div>
+		<div class="panel-body">
+			<ul id="move-commands-nav" class="nav nav-pills" role="tablist">
+				<li role="presentation" class="active"><a href="#to-testing" aria-controls="to-testing" role="tab" data-toggle="tab">To testing</a></li>
+				<li role="presentation"><a href="#to-stable" aria-controls="to-stable" role="tab" data-toggle="tab">To stable</a></li>
+			</ul>
+			<div class="tab-content">
+				<div role="tabpanel" class="tab-pane active" id="to-testing">
+					<code>curl -s <%= url_for('/move/testing')->to_abs %> | bash</code>
+				</div>
+				<div role="tabpanel" class="tab-pane" id="to-stable">
+					<code>curl -s <%= url_for('/move/stable')->to_abs %> | bash</code>
+				</div>
+			</div>
+		</div>
+	</div>
+% }
+
+% if ($show_all_batches) {
+	<hr>
 % }
 
 % my $batch = 0;

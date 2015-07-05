@@ -37,6 +37,43 @@ helper rebuild_title => sub {
 	return $title;
 };
 
+sub move_commands {
+	my ($self, $dest) = @_;
+	state $sth = $self->db->prepare(q{
+		SELECT DISTINCT base, lower(repos.name) AS repo
+		FROM build_tasks
+		JOIN packages ON pkgbase = base
+		JOIN repos ON repos.id = repo_id
+		WHERE repos.testing = false
+		AND repos.staging = false});
+	my %repo_from_to = (
+		testing => {
+			core => 'staging testing',
+			extra => 'staging testing',
+			community => 'community-{staging,testing}',
+			multilib => 'multilib-{staging,testing}',
+		}, stable => {
+			core => 'testing core',
+			extra => 'testing extra',
+			community => 'community{-testing,}',
+			multilib => 'multilib{-testing,}',
+		});
+
+	$sth->execute;
+	my %moves;
+	while (my $row = $sth->fetchrow_hashref) {
+		push @{$moves{$row->{repo}}}, $row->{base};
+	}
+
+	my @cmds;
+	for (sort keys %moves) {
+		my $root = $_ =~ /^(core|extra)$/ ? 'packages' : 'community';
+		push @cmds, "/$root/db-move $repo_from_to{$dest}{$_} "  .  join ' ', sort @{$moves{$_}};
+	}
+
+	return @cmds;
+}
+
 sub get_builder {
 	my ($self, $token) = @_;
 	state $sth = $self->db->prepare(q{
@@ -143,6 +180,13 @@ get '/retry/:base' => sub {
 	my $class = $num == 1 ? 'success' : 'danger';
 	$self->flash(alert => {message => $message, class => $class});
 	$self->redirect_to('/');
+};
+
+get '/move/:dest' => sub {
+	my $self = shift;
+	my $dest = $self->param('dest');
+
+	$self->render(text => join(" &&\n", move_commands $self, $dest), format => 'txt');
 };
 
 get '/' => sub {
