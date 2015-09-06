@@ -44,7 +44,7 @@ sub get_deps {
 		WITH RECURSIVE deps AS (
 				SELECT name FROM packages_depend
 				JOIN packages ON packages.id = pkg_id
-				WHERE pkgname = ? AND deptype IN ('D', 'M')
+				WHERE pkgname = ? AND deptype IN ('D', 'M', 'C')
 			UNION
 				SELECT packages_depend.name FROM deps
 				JOIN packages ON pkgname = deps.name
