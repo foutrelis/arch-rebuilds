@@ -34,18 +34,15 @@ api_call() {
 }
 
 build_i686() {
-	local base=$1
-	cxx11abi-celestia-build $base cxx11abi i686 cxx11abi-i686-build
+	staging-i686-build
 }
 
 build_x86_64() {
-	local base=$1
-	cxx11abi-celestia-build $base cxx11abi x86_64 cxx11abi-x86_64-build
+	staging-x86_64-build
 }
 
 build_multilib() {
-	local base=$1 repo=${2:-cxx11abi-multilib}
-	cxx11abi-celestia-build $base $repo x86_64 multilib-cxx11abi-build
+	multilib-staging-build
 }
 
 abort_build() {
@@ -82,37 +79,45 @@ try_build() {
 	fi
 
 	cd $base/trunk
-	setconf PKGBUILD pkgrel=0.3
-
-	if [[ $base == gcc || $base == gcc-multilib ]]; then
-		sed -i 's/--with-default-libstdcxx-abi=c++98//' PKGBUILD
-	fi
+	setconf PKGBUILD pkgrel+=1
+	commitcmd='svn commit -m "ncurses 6.0 rebuild."'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
-		buildcmd="build_multilib $base && build_i686 $base"
+		buildcmd='build_multilib && build_i686'
+		commitcmd+=' && multilib-stagingpkg -a x86_64'
+		commitcmd+=' && community-stagingpkg -a i686'
 	elif [[ $repos == multilib ]]; then
-		buildcmd="build_multilib $base"
+		buildcmd='build_multilib'
+		commitcmd+=' && multilib-stagingpkg'
 	else
 		buildcmd='true'
 		arches=($(. PKGBUILD && printf "%s\n" "${arch[@]}" | sort | uniq))
+
 		for arch in "${arches[@]}"; do
 			case $arch in
 				i686)
-					buildcmd+=" && build_i686 $base"
+					buildcmd+=' && build_i686'
 					;;
 				x86_64)
-					buildcmd+=" && { build_x86_64 $base || { \
-						grep -q 'error: target not found' build.log && \
-						build_multilib $base cxx11abi; }; }"
+					buildcmd+=' && { build_x86_64 || { \
+						grep -q "error: target not found" build.log && \
+						build_multilib; }; }'
 					;;
 			esac
 		done
+
+		if [[ $repos == community ]]; then
+			commitcmd+=' && community-stagingpkg'
+		else
+			commitcmd+=' && stagingpkg'
+		fi
 	fi
 
 	echo "=> Building package $base for repos: ${repos[@]}"
 
-	if (eval $buildcmd) > build.log 2>&1; then
+	if (eval $buildcmd) > build.log 2>&1 && eval $commitcmd; then
+		ssh nymeria '/packages/db-update && /community/db-update'
 		api_call update base=$base status=complete
 		build_successful=1
 	else
