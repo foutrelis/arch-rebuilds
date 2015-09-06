@@ -117,7 +117,7 @@ sub add_build_tasks {
 }
 
 # Read package names from stdin
-my @pkgs = map { chomp; $_ } <>;
+my @pkgs = map { chomp; $_ } <STDIN>;
 
 # Group by package base and calculate dependencies
 my %bases = map { get_base($_) => {deps => []} } @pkgs;
@@ -138,10 +138,10 @@ for my $base (keys %bases) {
 	}
 }
 
-# These are packages we must build first
-my @first_batch = qw( gcc gcc-multilib );
+# These are packages we must build manually first
+my @first_batch = @ARGV;
 
-add_build_tasks 'pending', 'single', @first_batch;
+add_build_tasks 'complete', 'single', @first_batch;
 $g->delete_vertices(@first_batch);
 
 while (1) {
