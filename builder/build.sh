@@ -100,8 +100,8 @@ try_build() {
 					buildcmd+=' && build_i686'
 					;;
 				x86_64)
-					buildcmd+=' && { build_x86_64 || { \
-						grep -q "error: target not found" build.log && \
+					buildcmd+=' && { build_x86_64 || {
+						grep -q "error: target not found" build.log &&
 						build_multilib; }; }'
 					;;
 			esac
