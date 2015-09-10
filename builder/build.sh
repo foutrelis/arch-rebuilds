@@ -117,7 +117,7 @@ try_build() {
 	echo "=> Building package $base for repos: ${repos[@]}"
 
 	if (eval $buildcmd) > build.log 2>&1 && eval $commitcmd; then
-		ssh nymeria '/packages/db-update && /community/db-update'
+		ssh nymeria.archlinux.org '/packages/db-update && /community/db-update'
 		api_call update base=$base status=complete
 		build_successful=1
 	else
