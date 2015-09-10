@@ -186,7 +186,14 @@ get '/move/:dest' => sub {
 	my $self = shift;
 	my $dest = $self->param('dest');
 
-	$self->render(text => join(" &&\n", move_commands $self, $dest), format => 'txt');
+	my $group_check = <<'EOM';
+if [[ $(printf "%s\n" $(id -Gn) | grep -P '^(dev|tu|multilib)$' | wc -l) != 3 ]]; then
+	echo 'Need to be in all (dev, tu, multilib) groups to move packages.'
+	exit 1
+fi
+EOM
+
+	$self->render(text => $group_check . join(" &&\n", move_commands $self, $dest), format => 'txt');
 };
 
 get '/' => sub {
