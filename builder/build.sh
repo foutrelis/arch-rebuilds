@@ -96,7 +96,7 @@ try_build() {
 
 		for arch in "${arches[@]}"; do
 			case $arch in
-				i686)
+				i686|any)
 					buildcmd+=' && build_i686'
 					;;
 				x86_64)
