@@ -70,17 +70,39 @@ try_build() {
 	trap "rm -rf \"$builddir\"" EXIT
 	trap "abort_build $base; trap - INT; kill -INT $$" INT
 
-	pushd "$builddir" > /dev/null
+	cd "$builddir"
 
 	{ archco $base || communityco $base; } >/dev/null 2>&1
 	if [[ ! -f $base/trunk/PKGBUILD ]]; then
 		api_call update base=$base status=failed log='Check out failed'
+		rm -rf "$builddir"
+		trap - EXIT INT
 		return
 	fi
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "ncurses 6.0 rebuild."'
+	commitcmd='svn commit -m "Python 3.5 rebuild"'
+
+	# OMG DERP CODE
+	sed -i 's|usr/lib/python3\.4|usr/lib/python3.5|g' PKGBUILD
+	if stat ../repos/*staging* >/dev/null 2>&1; then
+		api_call update base=$base status=complete
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
+	elif (. PKGBUILD && declare -f check) | grep -q '|| \(true\|warning\)'; then
+		api_call update base=$base status=failed log='Manual rebuild required; package ignores test failures in check().'
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
+	elif grep -v ^pkgver= PKGBUILD | grep -qF '3.4'; then
+		api_call update base=$base status=failed log='Manual rebuild required; package contains reference(s) to Python 3.4.'
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
+	fi
+	# /OMG DERP CODE
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
@@ -130,10 +152,7 @@ try_build() {
 	fi
 
 	rm -rf "$builddir"
-
 	trap - EXIT INT
-
-	popd > /dev/null
 }
 
 while :; do
