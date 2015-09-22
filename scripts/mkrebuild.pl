@@ -39,6 +39,18 @@ sub get_provisions {
 }
 memoize('get_provisions');
 
+sub get_group_pkgs {
+	state $sth = $dbh->prepare(q{
+		SELECT DISTINCT pkgname FROM packages_packagegroup
+		JOIN packages ON pkg_id = packages.id
+		WHERE name = ?});
+	my $group = shift;
+
+	$sth->execute($group);
+	return map { $_->[0] } @{$sth->fetchall_arrayref};
+}
+memoize('get_group_pkgs');
+
 sub get_deps {
 	state $sth = $dbh->prepare(q{
 		WITH RECURSIVE deps AS (
@@ -139,7 +151,10 @@ for my $base (keys %bases) {
 }
 
 # These are packages we must build manually first
-my @first_batch = @ARGV;
+my @first_batch = uniq grep { exists $bases{$_} } map { get_base($_) }
+	get_group_pkgs('base-devel'),
+	get_group_pkgs('multilib-devel'),
+	@ARGV;
 
 add_build_tasks 'complete', 'single', @first_batch;
 $g->delete_vertices(@first_batch);
