@@ -82,27 +82,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "Python 3.5 rebuild"'
-
-	# OMG DERP CODE
-	sed -i 's|usr/lib/python3\.4|usr/lib/python3.5|g' PKGBUILD
-	if stat ../repos/*staging* >/dev/null 2>&1; then
-		api_call update base=$base status=complete
-		rm -rf "$builddir"
-		trap - EXIT INT
-		return
-	elif (. PKGBUILD && declare -f check) | grep -q '|| \(true\|warning\)'; then
-		api_call update base=$base status=failed log='Manual rebuild required; package ignores test failures in check().'
-		rm -rf "$builddir"
-		trap - EXIT INT
-		return
-	elif grep -v ^pkgver= PKGBUILD | grep -qF '3.4'; then
-		api_call update base=$base status=failed log='Manual rebuild required; package contains reference(s) to Python 3.4.'
-		rm -rf "$builddir"
-		trap - EXIT INT
-		return
-	fi
-	# /OMG DERP CODE
+	commitcmd='svn commit -m "poppler 0.36.0 / glew 1.13.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
