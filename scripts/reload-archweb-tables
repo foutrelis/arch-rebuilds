@@ -1,0 +1,14 @@
+#!/bin/sh
+
+psql arch_rebuilds <<EOQ
+    drop table arches, packages, packages_depend, packages_packagegroup, packages_provision, repos;
+EOQ
+
+ssh nymeria.archlinux.org pg_dump -O -x -h gudrun -U archweb_update -d archweb \
+    -t arches \
+    -t packages \
+    -t packages_depend \
+    -t packages_packagegroup \
+    -t packages_provision \
+    -t repos \
+    | psql arch_rebuilds
