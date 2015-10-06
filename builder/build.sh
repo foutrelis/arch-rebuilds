@@ -82,7 +82,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "poppler 0.36.0 / glew 1.13.0 rebuild"'
+	commitcmd='svn commit -m "GHC 7.10.2 rebuild"'
 
 	sed -i 's/ghc=7.10.1/ghc=7.10.2/' PKGBUILD
 
