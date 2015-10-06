@@ -84,6 +84,8 @@ try_build() {
 	setconf PKGBUILD pkgrel+=1
 	commitcmd='svn commit -m "poppler 0.36.0 / glew 1.13.0 rebuild"'
 
+	sed -i 's/ghc=7.10.1/ghc=7.10.2/' PKGBUILD
+
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
 		buildcmd='build_multilib && build_i686'
