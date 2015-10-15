@@ -1,9 +1,9 @@
 #!/bin/bash
 
 readonly API_BASE_URL=https://rebuilds.foutrelis.com
-readonly AUTH_TOKEN=$(< $HOME/.arch-rebuilds-token)
-readonly VERSION=$(< $(dirname $0)/version)
-readonly BASE_DIR=$(dirname $(readlink -f -- "$0"))
+readonly AUTH_TOKEN=$(< "$HOME/.arch-rebuilds-token")
+readonly VERSION=$(< "$(dirname $0)/version")
+readonly BASE_DIR=$(dirname "$(readlink -f -- "$0")")
 
 api_call() {
 	local action=$1; shift
@@ -137,7 +137,38 @@ try_build() {
 	trap - EXIT INT
 }
 
-while :; do
+# Requirements:
+# - nymeria.archlinux.org mirror listed first in /etc/pacman.d/mirrorlist.
+# - setconf package installed.
+# - ~/.gnupg/gpg-agent.conf containing:
+#     default-cache-ttl 604800
+#     max-cache-ttl 604800
+sanity_check() {
+	if ! grep -m1 '^Server = ' /etc/pacman.d/mirrorlist | grep -F nymeria.archlinux.org >/dev/null; then
+		echo 'error: must have nymeria as the first pacman mirror.' >&2
+		exit 1
+	fi
+
+	if ! type -p setconf >/dev/null; then
+		echo 'error: cannot find the setconf program.' >&2
+		exit 1
+	fi
+
+	local option value
+	for option in {default,max}-cache-ttl; do
+		value=$(gpgconf --list-options gpg-agent | grep ^$option: | cut -d: -f10)
+		if [[ -z $value ]]; then
+			value=$(gpgconf --list-options gpg-agent | grep ^$option: | cut -d: -f8)
+		fi
+
+		if ((value < 604800)); then
+			echo "error: gpg-agent option $option too low ($value) (must be at least 604800)."
+			exit 1
+		fi
+	done
+}
+
+while sanity_check; do
 	build_successful=0
 	try_build
 	(( $build_successful )) ||  sleep 5
