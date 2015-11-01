@@ -72,7 +72,7 @@ try_build() {
 
 	cd "$builddir"
 
-	{ archco $base || communityco $base; } >/dev/null 2>&1
+	{ archco $base || communityco $base; } &>/dev/null
 	if [[ ! -f $base/trunk/PKGBUILD ]]; then
 		api_call update base=$base status=failed log='Check out failed'
 		rm -rf "$builddir"
@@ -118,7 +118,7 @@ try_build() {
 
 	echo "=> Building package $base for repos: ${repos[@]}"
 
-	if (eval $buildcmd) > build.log 2>&1 && eval $commitcmd; then
+	if (eval $buildcmd) &>build.log && eval $commitcmd; then
 		ssh nymeria.archlinux.org '/packages/db-update && /community/db-update'
 		api_call update base=$base status=complete
 		build_successful=1
@@ -160,10 +160,18 @@ sanity_check() {
 		fi
 
 		if ((value < 604800)); then
-			echo "error: gpg-agent option $option too low ($value) (must be at least 604800)."
+			echo "error: gpg-agent option $option too low ($value) (must be at least 604800)." >&2
 			exit 1
 		fi
 	done
+
+	local gpgkey
+	gpgkey=$(. /etc/makepkg.conf; . "$HOME/.makepkg.conf" &>/dev/null; echo $GPGKEY)
+	if ! gpg --detach-sign --use-agent --no-armor ${gpgkey:+-u $gpgkey} "$BASE_DIR/build.sh"; then
+		echo 'error: unable to sign test file' >&2
+		exit 1
+	fi
+	rm "$BASE_DIR/build.sh.sig"
 }
 
 while sanity_check; do
