@@ -113,6 +113,9 @@ post '/fetch' => sub {
 	my $builder = get_builder $self, $self->param('token');
 	return $self->render(text => 'BAD AUTH', status => 403, format => 'txt') unless $builder;
 
+	# Kill switch in case something goes terribly wrong
+	return $self->render(text => 'NOPKG', format => 'txt') if (-e "$FindBin::Bin/pause");
+
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
 
