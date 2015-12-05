@@ -171,7 +171,7 @@ get '/log/(:base).log' => sub {
 get '/retry/:base' => sub {
 	my $self = shift;
 	state $sth = $self->db->prepare(q{
-		UPDATE current_build_tasks SET status = 'pending', log = ''
+		UPDATE current_build_tasks SET status = 'pending'
 		WHERE status = 'failed' AND base = ?});
 	my $base = $self->param('base');
 
