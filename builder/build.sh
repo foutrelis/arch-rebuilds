@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Make sure posix mode is disabled
+set +o posix
+
 readonly API_BASE_URL=https://rebuilds.foutrelis.com
 readonly AUTH_TOKEN=$(< "$HOME/.arch-rebuilds-token")
 readonly VERSION=$(< "$(dirname $0)/version")
