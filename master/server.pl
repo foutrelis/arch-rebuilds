@@ -159,7 +159,7 @@ post '/update' => sub {
 	$self->render(text => $num == 1 ? 'OK ' . uc $status : 'NOTOK', format => 'txt');
 };
 
-get '/log/(:base).log' => sub {
+get '/log/(#base).log' => sub {
 	my $self = shift;
 	state $sth = $self->db->prepare(q{SELECT log FROM current_build_tasks WHERE base = ?});
 	my $base = $self->param('base');
@@ -171,7 +171,7 @@ get '/log/(:base).log' => sub {
 	$self->render(text => $row->{log}, format => 'txt');
 };
 
-get '/retry/:base' => sub {
+get '/retry/#base' => sub {
 	my $self = shift;
 	state $sth = $self->db->prepare(q{
 		UPDATE current_build_tasks SET status = 'pending'
