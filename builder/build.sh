@@ -67,7 +67,7 @@ try_build() {
 
 	local base=${result[1]}
 	local repos=(${result[@]:2})
-	local buildcmd arches arch
+	local buildcmd commitcmd updatecmd arches arch
 	local builddir=$(mktemp -d -p "$BASE_DIR")
 
 	trap "rm -rf \"$builddir\"" EXIT
@@ -92,9 +92,11 @@ try_build() {
 		buildcmd='build_multilib && build_i686'
 		commitcmd+=' && multilib-stagingpkg -a x86_64'
 		commitcmd+=' && community-stagingpkg -a i686'
+		updatecmd='/community/db-update'
 	elif [[ $repos == multilib ]]; then
 		buildcmd='build_multilib'
 		commitcmd+=' && multilib-stagingpkg'
+		updatecmd='/community/db-update'
 	else
 		buildcmd='true'
 		arches=($(. PKGBUILD && printf "%s\n" "${arch[@]}" | sort | uniq))
@@ -114,15 +116,20 @@ try_build() {
 
 		if [[ $repos == community ]]; then
 			commitcmd+=' && community-stagingpkg'
+			updatecmd='/community/db-update'
 		else
 			commitcmd+=' && stagingpkg'
+			updatecmd='/packages/db-update'
 		fi
 	fi
 
 	echo "=> Building package $base for repos: ${repos[@]}"
 
 	if (eval $buildcmd) &>build.log && eval $commitcmd; then
-		ssh nymeria.archlinux.org '/packages/db-update && /community/db-update'
+		while ! ssh nymeria.archlinux.org "$updatecmd"; do
+			echo "Retrying $updatecmd on nymeria in a bit..."
+			sleep 10
+		done
 		api_call update base=$base status=complete
 		build_successful=1
 	else
