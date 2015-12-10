@@ -177,11 +177,13 @@ sanity_check() {
 
 	local gpgkey
 	gpgkey=$(. /etc/makepkg.conf; . "$HOME/.makepkg.conf" &>/dev/null; echo $GPGKEY)
+	trap "rm -f \"$BASE_DIR/build.sh.sig\"" EXIT
 	if ! gpg --detach-sign --use-agent --no-armor ${gpgkey:+-u $gpgkey} "$BASE_DIR/build.sh"; then
 		echo 'error: unable to sign test file' >&2
 		exit 1
 	fi
 	rm "$BASE_DIR/build.sh.sig"
+	trap - EXIT
 }
 
 while sanity_check; do
