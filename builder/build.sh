@@ -85,7 +85,9 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "C++11 ABI rebuild"'
+	commitcmd='svn commit -m "GHC 7.10.3 rebuild"'
+
+	sed -i 's/ghc=7\.10\.2/ghc=7.10.3/' PKGBUILD
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
