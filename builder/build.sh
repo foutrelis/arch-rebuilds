@@ -101,7 +101,7 @@ try_build() {
 		updatecmd='/community/db-update'
 	else
 		buildcmd='true'
-		arches=($(. PKGBUILD && printf "%s\n" "${arch[@]}" | sort | uniq))
+		arches=($(. ./PKGBUILD && printf "%s\n" "${arch[@]}" | sort | uniq))
 
 		for arch in "${arches[@]}"; do
 			case $arch in
