@@ -156,8 +156,10 @@ my @first_batch = uniq grep { exists $bases{$_} } map { get_base($_) }
 	get_group_pkgs('multilib-devel'),
 	@ARGV;
 
-add_build_tasks 'complete', 'single', @first_batch;
-$g->delete_vertices(@first_batch);
+if (@first_batch) {
+	add_build_tasks 'complete', 'single', @first_batch;
+	$g->delete_vertices(@first_batch);
+}
 
 while (1) {
 	# Find packages we can build independently and put them a new batch
