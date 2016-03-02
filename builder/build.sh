@@ -85,7 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "Rebuild due to temporarily untrusted key"'
+	commitcmd='svn commit -m "OpenSSL 1.0.2g rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
