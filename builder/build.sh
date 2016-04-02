@@ -85,7 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "OpenSSL 1.0.2g rebuild"'
+	commitcmd='svn commit -m "icu 57.1 / poppler 0.42.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
