@@ -6,6 +6,6 @@ psql arch_rebuilds <<EOQ
     drop table if exists $(IFS=,; echo "${tables[*]}");
 EOQ
 
-ssh nymeria.archlinux.org pg_dump -O -x -h gudrun -U archweb_update -d archweb \
+ssh repos.archlinux.org pg_dump -O -x -h gudrun.archlinux.org -U archweb_update -d archweb \
     $(printf ' -t %s' ${tables[@]}) |
     psql arch_rebuilds
