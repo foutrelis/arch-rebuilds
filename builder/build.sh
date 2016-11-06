@@ -126,8 +126,8 @@ try_build() {
 	echo "=> Building package $base for repos: ${repos[@]}"
 
 	if (eval $buildcmd) &>build.log && eval $commitcmd; then
-		while ! ssh nymeria.archlinux.org "$updatecmd"; do
-			echo "Retrying $updatecmd on nymeria in a bit..."
+		while ! ssh repos.archlinux.org "$updatecmd"; do
+			echo "Retrying $updatecmd on repos.archlinux.org in a bit..."
 			sleep 10
 		done
 		api_call update base=$base status=complete
@@ -146,14 +146,14 @@ try_build() {
 }
 
 # Requirements:
-# - nymeria.archlinux.org mirror listed first in /etc/pacman.d/mirrorlist.
+# - repos.archlinux.org mirror listed first in /etc/pacman.d/mirrorlist.
 # - setconf package installed.
 # - ~/.gnupg/gpg-agent.conf containing:
 #     default-cache-ttl 604800
 #     max-cache-ttl 604800
 sanity_check() {
-	if ! grep -m1 '^Server = ' /etc/pacman.d/mirrorlist | grep -F nymeria.archlinux.org >/dev/null; then
-		echo 'error: must have nymeria as the first pacman mirror.' >&2
+	if ! grep -m1 '^Server = ' /etc/pacman.d/mirrorlist | grep -F repos.archlinux.org >/dev/null; then
+		echo 'error: must have repos.archlinux.org as the first pacman mirror.' >&2
 		exit 1
 	fi
 
