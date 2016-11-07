@@ -145,7 +145,7 @@ post '/update' => sub {
 	return $self->render(text => 'BAD AUTH', status => 403, format => 'txt') unless $builder;
 
 	unless ($base and $status =~ /^(pending|complete|failed)$/) {
-		$self->render(text => 'BAD REQUEST', status => 400, format => 'txt');
+		return $self->render(text => 'BAD REQUEST', status => 400, format => 'txt');
 	}
 
 	gunzip \$self->param('log'), \my $log;
