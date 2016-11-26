@@ -85,7 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "readline 7.0 rebuild"'
+	commitcmd='svn commit -m "icu 58.1 / poppler 0.49.0 / hunspell 1.5.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
