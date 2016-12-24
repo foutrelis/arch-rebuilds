@@ -81,7 +81,27 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "boost 1.67.0 rebuild"'
+	commitcmd='svn commit -m "Python 3.7 rebuild"'
+
+	# Python rebuild specific code
+	sed -i 's|usr/lib/python3\.6|usr/lib/python3.7|g' PKGBUILD
+	if stat ../repos/*staging* >/dev/null 2>&1; then
+		api_call update base=$base status=complete
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
+	elif (. PKGBUILD && declare -f check) | grep -q '|| \(true\|warning\)'; then
+		api_call update base=$base status=failed log='Manual rebuild required; package ignores test failures in check().'
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
+	elif grep -v ^pkgver= PKGBUILD | grep -qF '3.6'; then
+		api_call update base=$base status=failed log='Manual rebuild required; package might contain reference(s) to Python 3.6.'
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
+	fi
+	# /Python rebuild specific code
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
