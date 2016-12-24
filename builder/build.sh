@@ -94,13 +94,8 @@ try_build() {
 		rm -rf "$builddir"
 		trap - EXIT INT
 		return
-	elif (. PKGBUILD && declare -f check) | grep -q '|| \(true\|warning\)'; then
-		api_call update base=$base status=failed log='Manual rebuild required; package ignores test failures in check().'
-		rm -rf "$builddir"
-		trap - EXIT INT
-		return
 	elif grep -v ^pkgver= PKGBUILD | grep -qF '3.5'; then
-		api_call update base=$base status=failed log='Manual rebuild required; package contains reference(s) to Python 3.5.'
+		api_call update base=$base status=failed log='Manual rebuild required; package might contain reference(s) to Python 3.5.'
 		rm -rf "$builddir"
 		trap - EXIT INT
 		return
