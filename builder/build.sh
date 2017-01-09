@@ -85,22 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "Python 3.6 rebuild"'
-
-	# Python 3.6 rebuild specific code
-	sed -i 's|usr/lib/python3\.5|usr/lib/python3.6|g' PKGBUILD
-	if stat ../repos/*staging* >/dev/null 2>&1; then
-		api_call update base=$base status=complete
-		rm -rf "$builddir"
-		trap - EXIT INT
-		return
-	elif grep -v ^pkgver= PKGBUILD | grep -qF '3.5'; then
-		api_call update base=$base status=failed log='Manual rebuild required; package might contain reference(s) to Python 3.5.'
-		rm -rf "$builddir"
-		trap - EXIT INT
-		return
-	fi
-	# /Python 3.6 rebuild specific code
+	commitcmd='svn commit -m "Ruby 2.4.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
