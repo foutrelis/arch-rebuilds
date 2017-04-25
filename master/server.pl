@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use Mojolicious::Lite;
+use Mojo::Util qw(decode);
 use DBI;
 use FindBin;
 use IO::Uncompress::Gunzip qw( gunzip );
@@ -149,6 +150,7 @@ post '/update' => sub {
 	}
 
 	gunzip \$self->param('log'), \my $log;
+	$log = decode('UTF-8', $log);
 
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
