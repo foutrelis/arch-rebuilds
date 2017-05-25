@@ -85,7 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "libwebp 0.6.0 / poppler 0.54.0 rebuild"'
+	commitcmd='svn commit -m "MariaDB 10.2.6 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
