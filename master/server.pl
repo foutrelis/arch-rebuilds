@@ -1,10 +1,10 @@
 #!/usr/bin/env perl
 
 use Mojolicious::Lite;
-use Mojo::Util qw(decode);
 use DBI;
 use FindBin;
-use IO::Uncompress::Gunzip qw( gunzip );
+use Encode qw(decode_utf8);
+use IO::Uncompress::Gunzip qw(gunzip);
 
 open my $fh, "$FindBin::Bin/../builder/version";
 chomp(my $expected_builder_version = <$fh>);
@@ -150,7 +150,7 @@ post '/update' => sub {
 	}
 
 	gunzip \$self->param('log'), \my $log;
-	$log = decode('UTF-8', $log);
+	$log = decode_utf8 $log;
 
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
