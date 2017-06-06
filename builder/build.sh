@@ -103,10 +103,10 @@ try_build() {
 
 		for arch in "${arches[@]}"; do
 			case $arch in
-				i686|any)
+				i686)
 					buildcmd+=' && build_i686'
 					;;
-				x86_64)
+				x86_64|any)
 					buildcmd+=' && { build_x86_64 || {
 						grep -q "error: target not found" build.log &&
 						build_multilib; }; }'
