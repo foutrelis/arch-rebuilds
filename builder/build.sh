@@ -85,7 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "GLEW 2.1.0 rebuild"'
+	commitcmd='svn commit -m "Perl versioned binary modules rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
