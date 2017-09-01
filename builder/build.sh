@@ -85,7 +85,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "Perl versioned binary modules rebuild"'
+	commitcmd='svn commit -m "poppler 0.58.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		# multilib package with i686 variant
