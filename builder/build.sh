@@ -36,10 +36,6 @@ api_call() {
 	echo "${result[@]}"
 }
 
-build_i686() {
-	staging-i686-build
-}
-
 build_x86_64() {
 	staging-x86_64-build
 }
@@ -88,11 +84,10 @@ try_build() {
 	commitcmd='svn commit -m "poppler 0.60.1 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
-		# multilib package with i686 variant
-		buildcmd='build_multilib && build_i686'
-		commitcmd+=' && multilib-stagingpkg -a x86_64'
-		commitcmd+=' && community-stagingpkg -a i686'
-		updatecmd='/community/db-update'
+		api_call update base=$base status=failed log='Package exists in multiple repos'
+		rm -rf "$builddir"
+		trap - EXIT INT
+		return
 	elif [[ $repos == multilib ]]; then
 		buildcmd='build_multilib'
 		commitcmd+=' && multilib-stagingpkg'
@@ -103,9 +98,6 @@ try_build() {
 
 		for arch in "${arches[@]}"; do
 			case $arch in
-				i686)
-					buildcmd+=' && build_i686'
-					;;
 				x86_64|any)
 					buildcmd+=' && { build_x86_64 || {
 						grep -q "error: target not found" build.log &&
