@@ -81,7 +81,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "poppler 0.60.1 rebuild"'
+	commitcmd='svn commit -m "poppler 0.61.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
