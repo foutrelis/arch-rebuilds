@@ -45,8 +45,7 @@ sub move_commands {
 		FROM build_tasks
 		JOIN packages ON pkgbase = base
 		JOIN repos ON repos.id = repo_id
-		WHERE repos.testing = false
-		AND repos.staging = false});
+		WHERE lower(repos.name) IN ('core', 'extra', 'community', 'multilib')});
 	my %repo_from_to = (
 		testing => {
 			core => 'staging testing',
@@ -90,8 +89,7 @@ sub get_repos {
 		SELECT DISTINCT lower(repos.name) FROM packages
 		JOIN repos ON repos.id = repo_id
 		WHERE pkgbase = ?
-		AND repos.testing = false
-		AND repos.staging = false});
+		AND lower(repos.name) IN ('core', 'extra', 'community', 'multilib')});
 
 	$sth->execute($base);
 	my @repos = map { $_->[0] } @{$sth->fetchall_arrayref};
