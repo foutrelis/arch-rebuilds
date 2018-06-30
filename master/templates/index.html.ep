@@ -2,7 +2,7 @@
 % my $sth = db->prepare(qq{
 %	SELECT batch, base, status, name, log_size, pg_size_pretty(log_size) AS log_size_pretty
 %	FROM $task_table LEFT JOIN builders ON builders.id = builder_id
-%	ORDER BY batch, base});
+%	ORDER BY batch, status = 'failed' desc, status = 'inprogress' desc, base});
 % $sth->execute;
 
 <p>
