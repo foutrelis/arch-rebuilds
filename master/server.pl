@@ -149,6 +149,7 @@ post '/update' => sub {
 
 	gunzip \$self->param('log'), \my $log;
 	$log = decode('UTF-8', $log);
+	$log =~ s/\0//g;
 
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
