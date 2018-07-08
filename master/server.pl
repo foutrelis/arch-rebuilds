@@ -3,7 +3,7 @@
 use Mojolicious::Lite;
 use DBI;
 use FindBin;
-use Encode qw(decode_utf8);
+use Encode qw(decode);
 use IO::Uncompress::Gunzip qw(gunzip);
 
 open my $fh, "$FindBin::Bin/../builder/version";
@@ -148,7 +148,7 @@ post '/update' => sub {
 	}
 
 	gunzip \$self->param('log'), \my $log;
-	$log = decode_utf8 $log;
+	$log = decode('UTF-8', $log);
 
 	$self->db->begin_work;
 	$self->db->do(q{LOCK TABLE build_tasks});
