@@ -182,10 +182,10 @@ while (1) {
 
 	# Need to resolve dependency cycles; try doing multiple iterative passes
 	# until all packages build and then do a final pass in a following batch
-	for my $scc (grep { @$_ > 1 } $g->strongly_connected_components) {
-		$g = $g->delete_vertices(@$scc);
-		add_build_tasks 'pending', 'multiple', @$scc;
-		add_build_tasks 'pending', 'single', @$scc;
+	if (my @scc = map { @$_ } grep { @$_ > 1 } $g->strongly_connected_components) {
+		$g = $g->delete_vertices(@scc);
+		add_build_tasks 'pending', 'multiple', @scc;
+		add_build_tasks 'pending', 'single', @scc;
 	}
 
 	last unless $g->vertices;
