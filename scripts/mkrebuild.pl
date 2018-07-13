@@ -128,6 +128,12 @@ sub add_build_tasks {
 	$sth->execute($batch, $_, $status, $passes) for @_;
 }
 
+sub add_build_tasks_last {
+	state $sth = $dbh->prepare(q{
+		INSERT INTO build_tasks (batch, base) VALUES (999999, ?)});
+	$sth->execute($_) for @_;
+}
+
 # Read package names from stdin
 my @pkgs = map { chomp; $_ } <STDIN>;
 
@@ -162,7 +168,12 @@ if (@first_batch) {
 }
 
 while (1) {
-	# Find packages we can build independently and put them a new batch
+	# Packages with no dependant tasks; build these last
+	my @bases = $g->isolated_vertices;
+	$g = $g->delete_vertices(@bases);
+	add_build_tasks_last @bases;
+
+	# Packages that currently don't depend on other tasks
 	if (my @bases = $g->successorless_vertices) {
 		$g = $g->delete_vertices(@bases);
 		add_build_tasks 'pending', 'single', @bases;
