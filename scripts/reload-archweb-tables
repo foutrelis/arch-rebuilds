@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 readonly tables=(arches packages{,_depend,_packagegroup,_provision} repos)
 
