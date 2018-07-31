@@ -160,7 +160,10 @@ post '/update' => sub {
 	$self->render(text => $num == 1 ? 'OK ' . uc $status : 'NOTOK', format => 'txt');
 };
 
-get '/log/(#base).log' => sub {
+my $log_route = '/log/<#base>.log';
+$log_route =~ tr/<>/()/ if Mojolicious->VERSION < 7.75;
+
+get $log_route => sub {
 	my $self = shift;
 	state $sth = $self->db->prepare(q{SELECT log FROM current_build_tasks WHERE base = ?});
 	my $base = $self->param('base');
