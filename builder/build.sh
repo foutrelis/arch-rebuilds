@@ -81,7 +81,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "Perl 5.28 rebuild"'
+	commitcmd='svn commit -m "icu 62.1 / poppler 0.67.0 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
