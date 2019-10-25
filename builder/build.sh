@@ -37,11 +37,11 @@ api_call() {
 }
 
 build_x86_64() {
-	staging-x86_64-build
+	staging-x86_64-build -- -- --nocheck
 }
 
 build_multilib() {
-	multilib-staging-build
+	multilib-staging-build -- -- --nocheck
 }
 
 abort_build() {
@@ -81,7 +81,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "boost 1.71.0 rebuild"'
+	commitcmd='svn commit -m "Python 3.8 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
