@@ -19,13 +19,13 @@ helper db => sub { shift->app->dbh };
 helper rebuild_label => sub {
 	my ($self, $base) = @_;
 	my %labels = (
-		complete => 'label-success',
-		inprogress => 'label-primary',
-		failed => 'label-danger',
+		complete => 'success',
+		inprogress => 'primary',
+		failed => $base->{log_size} < 10240 ? 'warning' : 'danger',
 	);
 
 	for (keys %labels) {
-		return "label $labels{$_}" if $_ eq $base->{status};
+		return "label label-$labels{$_}" if $_ eq $base->{status};
 	}
 	return 'label label-default';
 };
