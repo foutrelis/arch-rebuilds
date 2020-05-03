@@ -81,7 +81,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "poppler 0.88.0 / cfitsio 3.48 rebuild"'
+	commitcmd='svn commit -m "nettle 3.6 rebuild"'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
