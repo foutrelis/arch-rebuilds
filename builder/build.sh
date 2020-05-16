@@ -81,7 +81,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitcmd='svn commit -m "nettle 3.6 rebuild"'
+	commitmsg='nettle 3.6 rebuild'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
@@ -90,7 +90,7 @@ try_build() {
 		return
 	elif [[ $repos == multilib ]]; then
 		buildcmd='build_multilib'
-		commitcmd+=' && multilib-stagingpkg'
+		commitcmd="multilib-stagingpkg '$commitmsg'"
 		updatecmd='/community/db-update'
 	else
 		buildcmd='true'
@@ -107,10 +107,10 @@ try_build() {
 		done
 
 		if [[ $repos == community ]]; then
-			commitcmd+=' && community-stagingpkg'
+			commitcmd="community-stagingpkg '$commitmsg'"
 			updatecmd='/community/db-update'
 		else
-			commitcmd+=' && stagingpkg'
+			commitcmd="stagingpkg '$commitmsg'"
 			updatecmd='/packages/db-update'
 		fi
 	fi
