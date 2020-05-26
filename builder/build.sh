@@ -181,5 +181,5 @@ sanity_check() {
 while sanity_check; do
 	nopkg=0
 	try_build
-	(( $nopkg )) ||  sleep 30
+	(( $nopkg )) && sleep 30
 done
