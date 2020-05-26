@@ -55,6 +55,7 @@ try_build() {
 	if [[ -z $result ]]; then
 		return
 	elif [[ $result == NOPKG ]]; then
+		nopkg=1
 		return
 	elif [[ $result != OK ]]; then
 		echo "Got $result response for API call: fetch" >&2
@@ -123,7 +124,6 @@ try_build() {
 			sleep 10
 		done
 		api_call update base=$base status=complete
-		build_successful=1
 	else
 		# It would be nice to have better interrupt handling here
 		# but devtools doesn't appear to handle SIGINT correctly.
@@ -179,7 +179,7 @@ sanity_check() {
 }
 
 while sanity_check; do
-	build_successful=0
+	nopkg=0
 	try_build
-	(( $build_successful )) ||  sleep 5
+	(( $nopkg )) ||  sleep 30
 done
