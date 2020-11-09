@@ -71,7 +71,14 @@ try_build() {
 
 	cd "$builddir"
 
-	{ archco $base || communityco $base; } &>/dev/null
+	case $repos in
+		core|extra)
+			archco $base &>/dev/null
+			;;
+		community|multilib)
+			communityco $base &>/dev/null
+			;;
+	esac
 	if [[ ! -f $base/trunk/PKGBUILD ]]; then
 		api_call update base=$base status=failed log='Check out failed'
 		rm -rf "$builddir"
