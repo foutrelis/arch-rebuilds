@@ -88,7 +88,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitmsg='protobuf 3.15.6 rebuild'
+	commitmsg='Ruby 3.0.0 rebuild'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
