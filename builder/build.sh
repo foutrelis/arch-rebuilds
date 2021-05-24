@@ -88,7 +88,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitmsg='imath/openexr 3.0.2 rebuild'
+	commitmsg='Perl 5.34 rebuild'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
