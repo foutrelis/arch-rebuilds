@@ -88,7 +88,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitmsg='poppler 21.09.0 rebuild'
+	commitmsg='harfbuzz 3.0.0 rebuild'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
