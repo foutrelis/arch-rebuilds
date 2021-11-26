@@ -37,11 +37,11 @@ api_call() {
 }
 
 build_x86_64() {
-	staging-x86_64-build
+	staging-x86_64-build -- -- --nocheck
 }
 
 build_multilib() {
-	multilib-staging-build
+	multilib-staging-build -- -- --nocheck
 }
 
 abort_build() {
@@ -88,7 +88,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitmsg='icu 70.1 rebuild'
+	commitmsg='Python 3.10 rebuild'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
