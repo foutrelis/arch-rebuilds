@@ -37,11 +37,11 @@ api_call() {
 }
 
 build_x86_64() {
-	staging-x86_64-build -- -- --nocheck
+	staging-x86_64-build
 }
 
 build_multilib() {
-	multilib-staging-build -- -- --nocheck
+	multilib-staging-build
 }
 
 abort_build() {
