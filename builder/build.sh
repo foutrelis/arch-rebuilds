@@ -88,7 +88,7 @@ try_build() {
 
 	cd $base/trunk
 	setconf PKGBUILD pkgrel+=1
-	commitmsg='icu 71.1 rebuild'
+	commitmsg='protobuf 3.20 rebuild'
 
 	if [[ ${#repos[@]} -gt 1 ]]; then
 		api_call update base=$base status=failed log='Package exists in multiple repos'
