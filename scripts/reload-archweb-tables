@@ -9,3 +9,4 @@ EOQ
 ssh repos.archlinux.org pg_dump -O -x -h 10.0.0.1 -U archweb -d archweb \
     $(printf ' -t %s' ${tables[@]}) |
     psql arch_rebuilds
+vacuumdb --analyze-only arch_rebuilds
